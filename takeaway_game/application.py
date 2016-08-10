@@ -6,10 +6,10 @@ clock = pygame.time.Clock()
 
 class Ball(object):
     def __init__(self):
-        self.image = pygame.image.load("./resources/ball.gif")
+        self.image = pygame.image.load("./resources/ball.png")
         self.rect = self.image.get_rect()
 
-        self._speed = [500.0, 500.0]
+        self._speed = [50.0, 50.0]
         self._horizontal_momentum = 0.0
         self._vertical_momentum = 0.0
 
@@ -45,22 +45,24 @@ class Ball(object):
         horizontal_offset = self.speed[0] * time
         vertical_offset = self.speed[1] * time
 
+        print self._horizontal_momentum, self._vertical_momentum
+
         self.rect = self.rect.move(horizontal_offset, vertical_offset)
 
     def collide(self, right, bottom):
         if self.rect.left < 0:
             self._speed[0] = -self._speed[0]
-            self._horizontal_momentum -= 0.001
+            self._horizontal_momentum -= 0.5
         elif self.rect.right > right:
             self._speed[0]  = -self._speed[0]
-            self._horizontal_momentum -= 0.001
+            self._horizontal_momentum -= 0.5
 
         if self.rect.top < 0:
             self._speed[1] = -self._speed[1]
-            self._vertical_momentum -= 0.001
+            self._vertical_momentum -= 0.5
         elif self.rect.bottom > bottom:
             self._speed[1] = -self._speed[1]
-            self._vertical_momentum -= 0.001
+            self._vertical_momentum -= 0.5
 
     def clamp(self, rect):
         self.rect = self.rect.clamp(rect)
@@ -68,9 +70,9 @@ class Ball(object):
     def blit(self, screen):
         return screen.blit(self.image, self.rect)
 
-    def apply_force(self, source_location, momentum_to_add=0.75):
-        if not self.rect.collidepoint(source_location):
-            return
+    def apply_force(self, source_location, momentum_to_add=2.0):
+#        if not self.rect.collidepoint(source_location):
+#            return
 
         horizontal_center, vertical_center = self.center
 
@@ -129,7 +131,7 @@ class TakeawayGame(object):
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                         self.ball.apply_force(event.pos)
-                    elif event.button == 3:
+                    if event.button == 3:
                         self.ball.subtract_force()
 
             self.screen.fill(self.black)
