@@ -1,3 +1,4 @@
+import math
 import pygame
 
 clock = pygame.time.Clock()
@@ -67,9 +68,39 @@ class Ball(object):
     def blit(self, screen):
         return screen.blit(self.image, self.rect)
 
-    def add_momentum(self, source_location, momentum_to_add=0.25):
-        self._horizontal_momentum += 0.25
-        self._vertical_momentum += 0.25
+    def apply_force(self, source_location, momentum_to_add=0.75):
+        if not self.rect.collidepoint(source_location):
+            return
+
+        horizontal_center, vertical_center = self.center
+
+        delta_x = abs(source_location[0] - horizontal_center)
+        delta_y = abs(source_location[1] - vertical_center)
+
+        if delta_x == 0:
+            delta_x = 0.001
+
+        if delta_y == 0:
+            delta_y = 0.001
+
+        force_angle = math.atan(float(delta_y) / delta_x)
+
+        horizontal_momentum = momentum_to_add * math.cos(force_angle)
+        vertical_momentum = momentum_to_add * math.sin(force_angle)
+
+        self._horizontal_momentum += horizontal_momentum
+        self._vertical_momentum += vertical_momentum
+
+    def subtract_force(self, momentum_to_subtract=0.25):
+        if self._horizontal_momentum >= momentum_to_subtract:
+            self._horizontal_momentum -= momentum_to_subtract
+        else:
+            self._horizontal_momentum = 0
+
+        if self._vertical_momentum >= momentum_to_subtract:
+            self._vertical_momentum -= momentum_to_subtract
+        else:
+            self._vertical_momentum = 0
 
 
 class TakeawayGame(object):
@@ -97,9 +128,9 @@ class TakeawayGame(object):
                     return True
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
-                        self.ball.add_momentum(event.pos)
+                        self.ball.apply_force(event.pos)
                     elif event.button == 3:
-                        self.ball.add_momentum(event.pos)
+                        self.ball.subtract_force()
 
             self.screen.fill(self.black)
 
